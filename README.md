@@ -8,6 +8,12 @@ terminal emulators (iTerm2, Ghostty) to show Twemoji instead of Apple emoji.
 
 ## Requirements
 
+### Rust (recommended)
+
+- Rust 1.85+ (edition 2024)
+
+### Python
+
 - Python 3.12+
 - [uv](https://docs.astral.sh/uv/)
 - `rsvg-convert` (from librsvg) for SVG rasterization
@@ -17,12 +23,19 @@ terminal emulators (iTerm2, Ghostty) to show Twemoji instead of Apple emoji.
 ```bash
 # Clone Twemoji assets
 git clone --depth 1 https://github.com/jdecked/twemoji
+```
 
-# Rasterize + build (default: optimal preset)
+### Rust (single command, no intermediate files)
+
+```bash
+cargo run --release -- --preset optimal
+```
+
+### Python (two-step with intermediate PNGs)
+
+```bash
 uv run rasterize.py
 uv run build_font.py
-
-# Validate output
 uv run validate.py
 ```
 
@@ -35,18 +48,15 @@ uv run validate.py
 | `minimal` | 64 | ~11 MB | Smallest possible, single strike |
 
 ```bash
-# Use a specific preset
-uv run rasterize.py --preset full
-uv run build_font.py --preset full
+# Rust
+cargo run --release -- --preset full
+cargo run --release -- --sizes 48 96
+cargo run --release -- --preset minimal -o Twemoji-small.ttc
+cargo run --release -- --list-presets
 
-# Custom strike sizes
-uv run rasterize.py --sizes 48 96
-uv run build_font.py --sizes 48 96
-
-# Custom output path
-uv run build_font.py --preset minimal -o Twemoji-small.ttc
-
-# List presets
+# Python
+uv run rasterize.py --preset full && uv run build_font.py --preset full
+uv run rasterize.py --sizes 48 96 && uv run build_font.py --sizes 48 96
 uv run build_font.py --list-presets
 ```
 
@@ -66,14 +76,26 @@ Multi-codepoint sequences (ZWJ families, flags, skin tone modifiers) require a
 Without it, individual base emoji render correctly but sequences show as separate
 characters.
 
+## Performance
+
+The Rust implementation rasterizes in-memory (no intermediate files) and parallelizes
+with rayon:
+
+| Preset | Rust | Python |
+|--------|------|--------|
+| minimal | 0.17s | ~45s |
+| optimal | 0.46s | ~120s |
+| full | 1.06s | ~300s |
+
 ## Scripts
 
-| Script | Purpose |
-|--------|---------|
-| `rasterize.py` | Parallel SVG-to-PNG rasterization |
-| `build_font.py` | Pack PNGs into an sbix font using fonttools FontBuilder |
-| `validate.py` | Verify font structure, cmap coverage, and PNG integrity |
-| `strikes.py` | Shared preset definitions |
+| Path | Purpose |
+|------|---------|
+| `src/` | Rust implementation (single binary, in-memory pipeline) |
+| `rasterize.py` | Python: parallel SVG-to-PNG rasterization via rsvg-convert |
+| `build_font.py` | Python: pack PNGs into sbix font using fonttools |
+| `validate.py` | Python: verify font structure, cmap coverage, PNG integrity |
+| `strikes.py` | Python: shared preset definitions |
 
 ## License
 

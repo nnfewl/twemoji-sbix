@@ -4,3 +4,4 @@ pngs/
 *.ttf
 __pycache__/
 .venv/
+/target
