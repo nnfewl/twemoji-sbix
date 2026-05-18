@@ -1,0 +1,6 @@
+twemoji/
+pngs/
+*.ttc
+*.ttf
+__pycache__/
+.venv/

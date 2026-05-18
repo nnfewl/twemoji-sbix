@@ -1,0 +1,8 @@
+[project]
+name = "twemoji-sbix"
+version = "0.1.0"
+description = "Build Twemoji as an sbix font for macOS Core Text"
+requires-python = ">=3.12"
+dependencies = [
+    "fonttools>=4.63.0",
+]
